@@ -7,6 +7,7 @@ using Server_Windows.src.controllers;
 using Server_Windows.src.models;
 using NetFwTypeLib;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace Server_Windows
 {
@@ -15,19 +16,29 @@ namespace Server_Windows
 		static HttpListener listener;
 		static void Main(string[] args)
 		{
-            string port = args.Length >= 1 ? args[0] : "5000";
+            try
+            {
+                string port = args.Length >= 1 ? args[0] : "5000";
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                CreateFirewallRuleWindows(port);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    CreateFirewallRuleWindows(port);
 
-			listener = new HttpListener();
-			listener.Prefixes.Add("http://*:" + port + "/");
-			listener.Start();
+                listener = new HttpListener();
+                listener.Prefixes.Add("http://*:" + port + "/");
+                listener.Start();
 
-			var listenTask = HandleIncomingConnections();
-			listenTask.GetAwaiter().GetResult();
+                var listenTask = HandleIncomingConnections();
+                listenTask.GetAwaiter().GetResult();
 
-            listener.Close();
+                listener.Close();
+            }
+            catch (Exception e)
+			{
+                Console.WriteLine("Error:");
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.StackTrace);
+                Console.WriteLine(e.Message);
+			}
 		}
 
 		public static async Task HandleIncomingConnections()
