@@ -188,20 +188,24 @@ namespace Server_Windows.src.controllers
 			for (int i = 0; i < drives.Count(); i++)
 			{
 				DriveInfo drive = drives[i];
-				var model = new StaticsModel {
-					Name = drive.Name.Remove(drive.Name.Length - 1),
-					CurrentValue = drive.TotalSize - drive.TotalFreeSpace,
-					MinValue = 0,
-					MaxValue = drive.TotalSize,
-					ScalingFactor = (1024 * 1024 * 1024),
-					MeasurementUnit = "GB",
-					Details = new Dictionary<string, string>
+				if (drive.IsReady)
+				{
+					var model = new StaticsModel
+					{
+						Name = drive.Name.Remove(drive.Name.Length - 1),
+						CurrentValue = drive.TotalSize - drive.TotalFreeSpace,
+						MinValue = 0,
+						MaxValue = drive.TotalSize,
+						ScalingFactor = (1024 * 1024 * 1024),
+						MeasurementUnit = "GB",
+						Details = new Dictionary<string, string>
 					{
 						{ "drive_type", drive.DriveType.ToString().ToLower() },
 						{ "drive_format", drive.DriveFormat }
 					}
-				};
-				models.Add(model);
+					};
+					models.Add(model);
+				}
 			}
 			return models;
 		}
