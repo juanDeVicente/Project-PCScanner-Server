@@ -98,7 +98,7 @@ namespace Server_Windows.src.controllers
 			return localIP;
 		}
 
-		public override byte[] HandlePath(string path)
+		public override byte[] HandlePath(params string[] values)
 		{
 			return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new Model[]
 			{

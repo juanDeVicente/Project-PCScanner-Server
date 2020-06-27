@@ -212,7 +212,7 @@ namespace Server_Windows.src.controllers
 			return models;
 		}
 
-		public override byte[] HandlePath(string path)
+		public override byte[] HandlePath(params string[] values)
 		{
 			List<Model> statics = new List<Model>();
 			List<Model> cpuStatics = new List<Model>();

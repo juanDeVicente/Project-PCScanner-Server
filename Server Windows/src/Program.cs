@@ -9,6 +9,7 @@ using Server_Windows.src.models;
 using NetFwTypeLib;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Linq;
 
 namespace Server_Windows
 {
@@ -56,29 +57,39 @@ namespace Server_Windows
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
 
-                if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/statics"))
-                    WriteResponse(resp, staticsController.HandlePath(""));
-                else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/properties"))
-                    WriteResponse(resp, propertiesController.HandlePath(""));
-                else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/tasks"))
-                    WriteResponse(resp, taskController.HandlePath(""));
-                else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/shutdown"))
+                string[] urlParams = req.Url.AbsolutePath.TrimEnd('/').Split('/').Skip(1).ToArray();
+
+                if (req.HttpMethod == "GET")
                 {
-                    WriteResponse(resp, new byte[0]);
-                    InvokeWin32ShutdownMethod("1"); //FIXME puede ser que tenga que poner lo de force shutdown
+                    if (urlParams.Length == 0)
+                        WriteResponse(resp, Encoding.UTF8.GetBytes("hello!!"));
+                    else if (urlParams[0] == "statics")
+                        WriteResponse(resp, staticsController.HandlePath(""));
+                    else if (urlParams[0] == "properties")
+                        WriteResponse(resp, propertiesController.HandlePath(""));
+                    else if (urlParams[0] == "tasks")
+                        WriteResponse(resp, taskController.HandlePath(urlParams.Skip(1).Take(urlParams.Length - 1).ToArray()));
+                    else if (urlParams[0] == "shutdown")
+                    {
+                        WriteResponse(resp, new byte[0]);
+                        runServer = false;
+                        InvokeWin32ShutdownMethod("1"); //FIXME puede ser que tenga que poner lo de force shutdown (5)
+                    }
+                    else if (urlParams[0] == "reboot")
+                    {
+                        WriteResponse(resp, new byte[0]);
+                        runServer = false;
+                        InvokeWin32ShutdownMethod("2");
+                    }
+                    else
+                        WriteResponse(resp, new byte[0]);
+                    
                 }
-                else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/reboot"))
-                {
-                    WriteResponse(resp, new byte[0]);
-                    InvokeWin32ShutdownMethod("2");
-                }
-                else if (req.HttpMethod == "GET")
-                    WriteResponse(resp, new byte[0]);
                 else
                 {
                     resp.StatusCode = (int)HttpStatusCode.NotFound;
                     resp.Close();
-                } 
+                }
             }
         }
 
