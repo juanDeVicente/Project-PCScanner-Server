@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualBasic.Devices;
+using Newtonsoft.Json;
 using Server_Windows.src.models;
 using System;
 using System.Collections.Generic;
@@ -97,15 +98,15 @@ namespace Server_Windows.src.controllers
 			return localIP;
 		}
 
-		public override Model[] HandlePath(string path)
+		public override byte[] HandlePath(string path)
 		{
-			return new Model[]
+			return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new Model[]
 			{
 				GetPCName(),
 				GetLocalIPV4(),
 				//GetLocalIPV6(),
 				GetOSName()
-			};
+			}));
 		}
 	}
 }

@@ -1,9 +1,11 @@
 ﻿using LibreHardwareMonitor.Hardware;
+using Newtonsoft.Json;
 using Server_Windows.src.models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Server_Windows.src.controllers
 {
@@ -210,7 +212,7 @@ namespace Server_Windows.src.controllers
 			return models;
 		}
 
-		public override Model[] HandlePath(string path)
+		public override byte[] HandlePath(string path)
 		{
 			List<Model> statics = new List<Model>();
 			List<Model> cpuStatics = new List<Model>();
@@ -253,7 +255,7 @@ namespace Server_Windows.src.controllers
 			statics.Add(GetRAMStatics());
 			statics.AddRange(GetDiskStatics());
 			statics.AddRange(networkStatics);
-			return statics.ToArray();
+			return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(statics.ToArray()));
 		}
 	}
    

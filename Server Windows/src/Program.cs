@@ -47,6 +47,7 @@ namespace Server_Windows
             bool runServer = true;
             var staticsController = new StaticsController();
             var propertiesController = new PropertiesController();
+            var taskController = new TaskController();
 
             while (runServer)
             {
@@ -59,18 +60,20 @@ namespace Server_Windows
                     WriteResponse(resp, staticsController.HandlePath(""));
                 else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/properties"))
                     WriteResponse(resp, propertiesController.HandlePath(""));
+                else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/tasks"))
+                    WriteResponse(resp, taskController.HandlePath(""));
                 else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/shutdown"))
                 {
-                    WriteResponse(resp, new Model[0]);
+                    WriteResponse(resp, new byte[0]);
                     InvokeWin32ShutdownMethod("1"); //FIXME puede ser que tenga que poner lo de force shutdown
                 }
                 else if ((req.HttpMethod == "GET") && (req.Url.AbsolutePath == "/reboot"))
                 {
-                    WriteResponse(resp, new Model[0]);
+                    WriteResponse(resp, new byte[0]);
                     InvokeWin32ShutdownMethod("2");
                 }
                 else if (req.HttpMethod == "GET")
-                    WriteResponse(resp, new Model[0]);
+                    WriteResponse(resp, new byte[0]);
                 else
                 {
                     resp.StatusCode = (int)HttpStatusCode.NotFound;
@@ -79,9 +82,8 @@ namespace Server_Windows
             }
         }
 
-        public static async void WriteResponse(HttpListenerResponse resp, Model[] models)
+        public static async void WriteResponse(HttpListenerResponse resp, byte[] data)
 		{
-            byte[] data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(models));
             resp.ContentType = "application/json";
             resp.ContentEncoding = Encoding.UTF8;
             //resp.AppendHeader("Cache-Control", "no-cache");

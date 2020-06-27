@@ -9,6 +9,6 @@ namespace Server_Windows.src.controllers
 {
 	abstract class Controller
 	{
-		public abstract Model[] HandlePath(string path);
+		public abstract byte[] HandlePath(string path);
 	}
 }
