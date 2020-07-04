@@ -15,6 +15,6 @@ namespace Server_Windows.src.models
 		public string Username { get; set; }
 		public string MemoryUse { get; set; }
 		public string Description { get; set; }
-		public byte[] Icon { get; set; }
+		public string Icon { get; set; }
 	}
 }

@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
@@ -19,7 +21,6 @@ namespace Server_Windows.src.controllers
 {
 	class TaskController : Controller
 	{
-
 		private bool IsApplicationProcess(Process p)
 		{
 			return !string.IsNullOrEmpty(p.MainWindowTitle);
@@ -46,7 +47,8 @@ namespace Server_Windows.src.controllers
 			var applications = new List<TaskModel>();
 			var process = new List<TaskModel>();
 
-			Parallel.ForEach(Process.GetProcesses(), (p) =>
+			Parallel.ForEach(Process.GetProcesses(), new ParallelOptions { MaxDegreeOfParallelism = 16 }, (p) => //Esto se come la CPU
+			//foreach (var p in Process.GetProcesses())
 			{
 				//dynamic extraInfo = GetProcessExtraInformation(p.Id);
 				var model = new TaskModel()
@@ -55,7 +57,7 @@ namespace Server_Windows.src.controllers
 					PID = p.Id,
 					Responding = p.Responding,
 					Username = DLLImport.GetProcessUser(p),
-					MemoryUse = BytesToReadableValue(p.PrivateMemorySize64),
+					MemoryUse = BytesToReadableValue(p.PeakWorkingSet64),
 				};
 				try
 				{
@@ -67,15 +69,15 @@ namespace Server_Windows.src.controllers
 				}
 				try
 				{
-					model.Icon = ImageToByte(Icon.ExtractAssociatedIcon(p.MainModule.FileName).ToBitmap());
+					model.Icon = Convert.ToBase64String(ImageToByte(Icon.ExtractAssociatedIcon(p.MainModule.FileName).ToBitmap(), ImageFormat.Bmp));
 				}
 				catch
 				{
-					model.Icon = null;
+					model.Icon = Convert.ToBase64String(ImageToByte(Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location).ToBitmap(), ImageFormat.Bmp));
 				}
-				if (IsApplicationProcess(p))
+				if (model != null && IsApplicationProcess(p))
 					applications.Add(model);
-				else
+				else if (model != null)
 					process.Add(model);
 			});
 
@@ -108,23 +110,21 @@ namespace Server_Windows.src.controllers
 				return GetAllTasks();
 			return DeleteTask(int.Parse(values[0]));
 		}
-		public static byte[] ImageToByte(Image img)
+		public static byte[] ImageToByte(Image img, ImageFormat format)
 		{
 			using (var stream = new MemoryStream())
 			{
-				img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+				img.Save(stream, format);
 				return stream.ToArray();
 			}
 		}
 		/*
 		private ExpandoObject GetProcessExtraInformation(int processId)
 		{
-			// Query the Win32_Process
 			string query = "Select * From Win32_Process Where ProcessID = " + processId;
 			ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
 			ManagementObjectCollection processList = searcher.Get();
 
-			// Create a dynamic object to store some properties on it
 			dynamic response = new ExpandoObject();
 			response.Description = "no_description";
 			response.Username = "unknown";

@@ -3,9 +3,7 @@ using System.Management;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Server_Windows.src.controllers;
-using Server_Windows.src.models;
 using NetFwTypeLib;
 using System.Runtime.InteropServices;
 using System.IO;
@@ -83,7 +81,6 @@ namespace Server_Windows
                     }
                     else
                         WriteResponse(resp, new byte[0]);
-                    
                 }
                 else
                 {
@@ -100,7 +97,14 @@ namespace Server_Windows
             //resp.AppendHeader("Cache-Control", "no-cache");
             resp.ContentLength64 = data.LongLength;
 
-            await resp.OutputStream.WriteAsync(data, 0, data.Length);
+            try
+            {
+                await resp.OutputStream.WriteAsync(data, 0, data.Length);
+            }
+			catch
+			{
+                
+			}
             resp.Close();
         }
 
