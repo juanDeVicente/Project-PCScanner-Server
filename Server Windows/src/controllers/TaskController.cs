@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using Project_PCScanner_Server.src.utils;
+using Server_Windows.src.utils;
 using Server_Windows.src.models;
 using System;
 using System.Collections.Generic;
@@ -47,7 +47,7 @@ namespace Server_Windows.src.controllers
 			var applications = new List<TaskModel>();
 			var process = new List<TaskModel>();
 
-			Parallel.ForEach(Process.GetProcesses(), new ParallelOptions { MaxDegreeOfParallelism = 16 }, (p) => //Esto se come la CPU
+			Parallel.ForEach(Process.GetProcesses(), new ParallelOptions { MaxDegreeOfParallelism = 4 }, (p) => //Esto se come la CPU
 			//foreach (var p in Process.GetProcesses())
 			{
 				//dynamic extraInfo = GetProcessExtraInformation(p.Id);
@@ -69,16 +69,20 @@ namespace Server_Windows.src.controllers
 				}
 				try
 				{
-					model.Icon = Convert.ToBase64String(ImageToByte(Icon.ExtractAssociatedIcon(p.MainModule.FileName).ToBitmap(), ImageFormat.Bmp));
+					model.Icon = Convert.ToBase64String(ImageUtil.ImageToByte(Icon.ExtractAssociatedIcon(p.MainModule.FileName).ToBitmap(), ImageFormat.Bmp));
 				}
 				catch
 				{
-					model.Icon = Convert.ToBase64String(ImageToByte(Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location).ToBitmap(), ImageFormat.Bmp));
+					model.Icon = Convert.ToBase64String(ImageUtil.ImageToByte(Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location).ToBitmap(), ImageFormat.Bmp));
 				}
-				if (model != null && IsApplicationProcess(p))
-					applications.Add(model);
-				else if (model != null)
-					process.Add(model);
+				if (model != null)
+				{
+					if (IsApplicationProcess(p))
+						applications.Add(model);
+					else
+						process.Add(model);
+				}
+				
 			});
 
 			return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(
@@ -110,14 +114,7 @@ namespace Server_Windows.src.controllers
 				return GetAllTasks();
 			return DeleteTask(int.Parse(values[0]));
 		}
-		public static byte[] ImageToByte(Image img, ImageFormat format)
-		{
-			using (var stream = new MemoryStream())
-			{
-				img.Save(stream, format);
-				return stream.ToArray();
-			}
-		}
+		
 		/*
 		private ExpandoObject GetProcessExtraInformation(int processId)
 		{

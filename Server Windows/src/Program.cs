@@ -47,6 +47,7 @@ namespace Server_Windows
             var staticsController = new StaticsController();
             var propertiesController = new PropertiesController();
             var taskController = new TaskController();
+            var programController = new ProgramController("../../programs.json");
 
             while (runServer)
             {
@@ -67,6 +68,8 @@ namespace Server_Windows
                         WriteResponse(resp, propertiesController.HandlePath(""));
                     else if (urlParams[0] == "tasks")
                         WriteResponse(resp, taskController.HandlePath(urlParams.Skip(1).Take(urlParams.Length - 1).ToArray()));
+                    else if (urlParams[0] == "programs")
+                        WriteResponse(resp, programController.HandlePath(urlParams.Skip(1).Take(urlParams.Length - 1).ToArray()));
                     else if (urlParams[0] == "shutdown")
                     {
                         WriteResponse(resp, new byte[0]);
@@ -80,7 +83,10 @@ namespace Server_Windows
                         InvokeWin32ShutdownMethod("2");
                     }
                     else
-                        WriteResponse(resp, new byte[0]);
+					{
+                        resp.StatusCode = (int)HttpStatusCode.NotFound;
+                        resp.Close();
+                    }
                 }
                 else
                 {

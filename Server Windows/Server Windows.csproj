@@ -61,21 +61,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\controllers\Controller.cs" />
+    <Compile Include="src\controllers\ProgramController.cs" />
     <Compile Include="src\controllers\PropertiesController.cs" />
     <Compile Include="src\controllers\StaticsController.cs" />
     <Compile Include="src\controllers\TaskController.cs" />
     <Compile Include="src\models\Model.cs" />
+    <Compile Include="src\models\ProgramModel.cs" />
     <Compile Include="src\models\PropertiesModel.cs" />
     <Compile Include="src\models\StaticsModel.cs" />
     <Compile Include="src\models\TaskModel.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\utils\DLLImport.cs" />
+    <Compile Include="src\utils\ImageUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="app.manifest" />
     <None Include="packages.config" />
+    <None Include="programs.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="libraries\HidSharp.dll" />

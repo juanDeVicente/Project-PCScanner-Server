@@ -7,7 +7,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Project_PCScanner_Server.src.utils
+namespace Server_Windows.src.utils
 {
 	class DLLImport
 	{
