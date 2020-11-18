@@ -8,20 +8,26 @@ using NetFwTypeLib;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Linq;
+using Server_Windows.src.security;
 
 namespace Server_Windows
 {
 	class Program
 	{
 		static HttpListener listener;
+        static SecurityModule securityModule;
+        static string port;
 		static void Main(string[] args)
 		{
             try
             {
-                string port = args.Length >= 1 ? args[0] : "5000";
+                port = args.Length >= 1 ? args[0] : "5000";
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     CreateFirewallRuleWindows(port);
+
+                if (args.Length >= 2 && args[1] == "security")
+                    securityModule = new SecurityModule();
 
                 listener = new HttpListener();
                 listener.Prefixes.Add("http://*:" + port + "/");
@@ -47,21 +53,43 @@ namespace Server_Windows
             var staticsController = new StaticsController();
             var propertiesController = new PropertiesController();
             var taskController = new TaskController();
-            var programController = new ProgramController("../../programs.json");
+            var programController = new ProgramController("./programs.json");
+            var informationController = new InformationController(port);
 
             while (runServer)
             {
                 HttpListenerContext ctx = await listener.GetContextAsync();
-
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
-
                 string[] urlParams = req.Url.AbsolutePath.TrimEnd('/').Split('/').Skip(1).ToArray();
+                var address = req.RemoteEndPoint.Address;
 
-                if (req.HttpMethod == "GET")
+                if (securityModule != null && !securityModule.IsIpLogged(address))
+                {
+                    if (req.HttpMethod == "POST")
+                    {
+                        var reqPassword = req.QueryString.Get("password");
+                        if (reqPassword != null && securityModule.VerifyHash(reqPassword, address))
+                        {
+                            resp.StatusCode = (int)HttpStatusCode.OK;
+                            resp.Close();
+                        }
+                        else
+                        {
+                            resp.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            resp.Close();
+                        }
+                    }
+                    else
+                    {
+                        resp.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        resp.Close();
+                    }
+                }
+                else if (req.HttpMethod == "GET")
                 {
                     if (urlParams.Length == 0)
-                        WriteResponse(resp, Encoding.UTF8.GetBytes("hello!!"));
+                        WriteResponse(resp, informationController.HandlePath(""));
                     else if (urlParams[0] == "statics")
                         WriteResponse(resp, staticsController.HandlePath(""));
                     else if (urlParams[0] == "properties")

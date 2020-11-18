@@ -49,7 +49,7 @@ namespace Server_Windows.src.controllers
 			};
 		}
 
-		private string GetLocalIPv4Address()
+		public static string GetLocalIPv4Address()
 		{
 			string localIP = "127.0.0.1";
 			Socket socket = null;

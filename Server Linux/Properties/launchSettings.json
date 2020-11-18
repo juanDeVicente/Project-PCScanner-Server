@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Server Linux": {
+      "commandName": "Project",
+      "remoteDebugEnabled": false
+    }
+  }
+}
