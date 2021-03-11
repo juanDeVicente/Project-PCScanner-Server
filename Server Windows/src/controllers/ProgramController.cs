@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,9 @@ namespace Server_Windows.src.controllers
 		private List<ProgramExecutable> programs;
 		public ProgramController(string programJsonPath)
 		{
+			if (File.Exists(programJsonPath))
+				File.Create(programJsonPath);
+
 			this.programJsonPath = programJsonPath;
 			LoadPrograms();
 		}
